@@ -1,3 +1,15 @@
+# Python virtual environment
 .venv/
+
+# Python cache files
 __pycache__/
 *.pyc
+
+# Compiled C files
+*.exe
+*.o
+
+# Editor and operating system files
+.vscode/
+.DS_Store
+Thumbs.db

@@ -61,3 +61,12 @@ int srtf_should_preempt(
     return ready_queue[selected_index].remaining_time <
            current_process->remaining_time;
 }
+
+Scheduler create_srtf_scheduler(void) {
+    Scheduler scheduler;
+
+    scheduler.select_process = srtf_select_process;
+    scheduler.should_preempt = srtf_should_preempt;
+
+    return scheduler;
+}

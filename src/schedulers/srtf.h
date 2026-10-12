@@ -17,4 +17,6 @@ int srtf_should_preempt(
     int queue_size,
     int current_time
 );
+
+Scheduler create_srtf_scheduler(void);
 #endif

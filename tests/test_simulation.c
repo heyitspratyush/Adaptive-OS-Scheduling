@@ -3,6 +3,7 @@
 
 #include "../src/core/simulation.h"
 #include "../src/schedulers/fcfs.h"
+#include "../src/schedulers/srtf.h"
 
 
 static int test_cpu_idle_time(void) {
@@ -179,6 +180,44 @@ static int test_srtf_preemption(void) {
     return 0;
 }
 
+static int test_production_srtf(void) {
+    Process processes[2];
+
+    processes[0] = process_create(1, 0, 5, 1);
+    processes[1] = process_create(2, 2, 1, 2);
+
+    Scheduler scheduler = create_srtf_scheduler();
+
+    int result = simulation_run(
+        processes, 2, scheduler
+    );
+
+    if (result != 0) {
+        printf("FAIL: Production SRTF returned an error\n");
+        return 1;
+    }
+
+    if (
+        processes[0].start_time != 0 ||
+        processes[0].completion_time != 6 ||
+        processes[0].remaining_time != 0
+    ) {
+        printf("FAIL: Production SRTF P1 state incorrect\n");
+        return 1;
+    }
+
+    if (
+        processes[1].start_time != 2 ||
+        processes[1].completion_time != 3 ||
+        processes[1].remaining_time != 0
+    ) {
+        printf("FAIL: Production SRTF P2 state incorrect\n");
+        return 1;
+    }
+
+    printf("PASS: Production SRTF integration test\n");
+    return 0;
+}
 
 int main(void) {
     Process processes[3];
@@ -241,6 +280,10 @@ int main(void) {
     }
 
     if (test_srtf_preemption() != 0) {
+        return 1;
+    }
+
+    if (test_production_srtf() != 0) {
         return 1;
     }
 

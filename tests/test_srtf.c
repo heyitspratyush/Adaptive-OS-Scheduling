@@ -136,6 +136,23 @@ static int test_srtf_preemption_invalid_inputs(void) {
     return 0;
 }
 
+static int test_srtf_scheduler_factory(void) {
+    Scheduler scheduler = create_srtf_scheduler();
+
+    if (scheduler.select_process != srtf_select_process) {
+        printf("FAIL: SRTF selection callback not assigned\n");
+        return 1;
+    }
+
+    if (scheduler.should_preempt != srtf_should_preempt) {
+        printf("FAIL: SRTF preemption callback not assigned\n");
+        return 1;
+    }
+
+    printf("PASS: SRTF scheduler factory\n");
+    return 0;
+}
+
 int main(void) {
     if (test_srtf_selects_shortest() != 0) return 1;
     if (test_srtf_tie_breaks_by_pid() != 0) return 1;
@@ -145,6 +162,9 @@ int main(void) {
     if (test_srtf_does_not_preempt_for_longer_process() != 0) return 1;
     if (test_srtf_preemption_invalid_inputs() != 0) return 1;
 
+    if (test_srtf_scheduler_factory() != 0) {
+        return 1;
+    }
     printf("\nPASS: All SRTF unit tests\n");
     return 0;
 }

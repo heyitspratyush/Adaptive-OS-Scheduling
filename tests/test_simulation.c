@@ -4,6 +4,10 @@
 #include "../src/core/simulation.h"
 #include "../src/schedulers/fcfs.h"
 #include "../src/schedulers/srtf.h"
+#include "../src/schedulers/sjf.h"
+#include "../src/schedulers/priority.h"
+
+
 
 
 static int test_cpu_idle_time(void) {
@@ -219,6 +223,99 @@ static int test_production_srtf(void) {
     return 0;
 }
 
+
+static int test_remaining_time_exceeds_burst_time(void) {
+    Process processes[1];
+
+    processes[0] = process_create(1, 0, 5, 1);
+    processes[0].remaining_time = 8;
+
+    Scheduler scheduler = create_fcfs_scheduler();
+
+    int result = simulation_run(processes, 1, scheduler);
+
+    if (result != -1) {
+        printf("FAIL: Remaining time exceeds burst time\n");
+        return 1;
+    }
+
+    printf("PASS: Remaining time exceeds burst time\n");
+    return 0;
+}
+
+static int test_rejects_old_process_state(void) {
+    Scheduler scheduler = create_fcfs_scheduler();
+    Process processes[1];
+
+    processes[0] = process_create(1, 0, 5, 1);
+    processes[0].start_time = 0;
+
+    if (simulation_run(processes, 1, scheduler) != -1) {
+        printf("FAIL: Accepted a process that already started\n");
+        return 1;
+    }
+
+    processes[0] = process_create(1, 0, 5, 1);
+    processes[0].completion_time = 5;
+
+    if (simulation_run(processes, 1, scheduler) != -1) {
+        printf("FAIL: Accepted a process already marked completed\n");
+        return 1;
+    }
+
+    printf("PASS: Rejects old process state\n");
+    return 0;
+}
+
+static int test_production_sjf(void) {
+    Process processes[2];
+
+    processes[0] = process_create(1, 0, 5, 1);
+    processes[1] = process_create(2, 2, 1, 1);
+
+    Scheduler scheduler = create_sjf_scheduler();
+
+    int result = simulation_run(processes, 2, scheduler);
+
+    if (result != 0 ||
+        processes[0].completion_time != 5 ||
+        processes[1].completion_time != 6 ||
+        processes[0].remaining_time != 0 ||
+        processes[1].remaining_time != 0) {
+        printf("FAIL: Production SJF integration test\n");
+        return 1;
+    }
+
+    printf("PASS: Production SJF integration test\n");
+    return 0;
+}
+
+static int test_production_priority(void) {
+    Process processes[3];
+
+    processes[0] = process_create(1, 0, 5, 3);
+    processes[1] = process_create(2, 0, 2, 1);
+    processes[2] = process_create(3, 0, 3, 2);
+
+    Scheduler scheduler = create_priority_scheduler();
+
+    int result = simulation_run(processes, 3, scheduler);
+
+    if (result != 0 ||
+        processes[0].completion_time != 10 ||
+        processes[1].completion_time != 2 ||
+        processes[2].completion_time != 5 ||
+        processes[0].remaining_time != 0 ||
+        processes[1].remaining_time != 0 ||
+        processes[2].remaining_time != 0) {
+        printf("FAIL: Production Priority integration test\n");
+        return 1;
+    }
+
+    printf("PASS: Production Priority integration test\n");
+    return 0;
+}
+
 int main(void) {
     Process processes[3];
 
@@ -284,6 +381,22 @@ int main(void) {
     }
 
     if (test_production_srtf() != 0) {
+        return 1;
+    }
+
+    if (test_remaining_time_exceeds_burst_time() != 0) {
+        return 1;
+    }
+
+    if (test_rejects_old_process_state() != 0) {
+        return 1;
+    }
+
+    if (test_production_sjf() != 0) {
+        return 1;
+    }
+
+    if (test_production_priority() != 0) {
         return 1;
     }
 

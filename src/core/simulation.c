@@ -47,7 +47,10 @@ int simulation_run(
     for (int i = 0; i < process_count; i++) {
         if (processes[i].arrival_time < 0 ||
             processes[i].burst_time <= 0 ||
-            processes[i].remaining_time <= 0) {
+            processes[i].remaining_time <= 0||
+            processes[i].remaining_time > processes[i].burst_time||
+            processes[i].start_time != -1 ||
+            processes[i].completion_time != -1) {
             return -1;
         }
     }
